@@ -12,17 +12,6 @@
                                                                                                   
 --]]
 
-getgenv().Fallenlol = {
-    ['Configuration'] = {
-        ['Intro'] = {
-            ['Enabled'] = true,
-        },
-        ['Textures'] = {
-            ['Enabled'] = false,
-        }
-    } 
-}
-
 if Fallenlol.Configuration.Intro.Enabled then 
     local cam = workspace.CurrentCamera
     local x = cam.ViewportSize.X
