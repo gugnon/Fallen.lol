@@ -1,254 +1,77 @@
 --[[
- ________ ________  ___       ___       _______   ________       ___       ________  ___          
-|\  _____\\   __  \|\  \     |\  \     |\  ___ \ |\   ___  \    |\  \     |\   __  \|\  \         
-\ \  \__/\ \  \|\  \ \  \    \ \  \    \ \   __/|\ \  \\ \  \   \ \  \    \ \  \|\  \ \  \        
- \ \   __\\ \   __  \ \  \    \ \  \    \ \  \_|/_\ \  \\ \  \   \ \  \    \ \  \\\  \ \  \       
-  \ \  \_| \ \  \ \  \ \  \____\ \  \____\ \  \_|\ \ \  \\ \  \ __\ \  \____\ \  \\\  \ \  \____  
-   \ \__\   \ \__\ \__\ \_______\ \_______\ \_______\ \__\\ \__\\__\ \_______\ \_______\ \_______\
-    \|__|    \|__|\|__|\|_______|\|_______|\|_______|\|__| \|__\|__|\|_______|\|_______|\|_______|
+    
+ ________ ________  ___       ___       _______   ________                                                               
+|\  _____\\   __  \|\  \     |\  \     |\  ___ \ |\   ___  \                                                                 
+\ \  \__/\ \  \|\  \ \  \    \ \  \    \ \   __/|\ \  \\ \  \                                                            
+ \ \   __\\ \   __  \ \  \    \ \  \    \ \  \_|/_\ \  \\ \  \                                                           
+  \ \  \_| \ \  \ \  \ \  \____\ \  \____\ \  \_|\ \ \  \\ \  \                                                          
+   \ \__\   \ \__\ \__\ \_______\ \_______\ \_______\ \__\\ \__\                                                          
+    \|__|    \|__|\|__|\|_______|\|_______|\|_______|\|__| \|__|                                                         
+                                                                                                  
+                                                                                                  
+                                                                                                  
 --]]
 
 getgenv().Fallenlol = {
-    Enabled = true,
-    Prediction = 0.1215,
-    Keybind = "C",
-    Resolver = false,
-    WallCheck = true,
-    FovSettings = {
-        FovVisible = true,
-        FovRadius = 120,
-        FovThickness = 2,
-        FovTransparency = 0.7,
-        FovColor = Color3.fromRGB(255, 255, 255),
-        Filled = false,
-        FillTransparency = 0.9,
-        FovShape = "Circle" -- ["Circle", "Square", "Triangle"]
-    },
-    HitPoint = {
-        ShowHitPoint = false,
-        HitPointRadius = 8,
-        HitPointThickness = 2,
-        HitPointColor = Color3.fromRGB(255, 0, 0),
-        HitPointTransparency = 1,
-    }
+    ['Configuration'] = {
+        ['Intro'] = {
+            ['Enabled'] = true,
+        },
+        ['Textures'] = {
+            ['Enabled'] = false,
+        }
+    } 
 }
 
-local G = game
-local RunService = G:GetService("RunService")
-local Players = G:GetService("Players")
-local UserInputService = G:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
-local Mouse = LocalPlayer:GetMouse()
-local CurrentCamera = G:GetService("Workspace").CurrentCamera
-local ReplicatedStorage = G:GetService("ReplicatedStorage")
-local StarterGui = G:GetService("StarterGui")
-local Workspace = G:GetService("Workspace")
+if Fallenlol.Configuration.Intro.Enabled then 
+    local cam = workspace.CurrentCamera
+    local x = cam.ViewportSize.X
+    local y = cam.ViewportSize.Y
+    local newx = math.floor(x * 0.5)
+    local newy = math.floor(y * 0.5)
 
-local Target = nil
-local V2 = Vector2.new
-local Fov = Drawing.new("Circle")
-local HitPoint = Drawing.new("Circle")
-local FovParts = {}
+    local SpashScreen = Instance.new("ScreenGui")
+    local Image = Instance.new("ImageLabel")
+    SpashScreen.Name = "SpashScreen"
+    SpashScreen.Parent = game.CoreGui
+    SpashScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    Image.Name = "Image"
+    Image.Parent = SpashScreen
+    Image.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Image.BackgroundTransparency = 1
+    Image.Position = UDim2.new(0, newx, 0, newy)
+    Image.Size = UDim2.new(0, 825, 0, 377)
+    Image.Image = "rbxassetid://17838210091"
+    Image.ImageTransparency = 1
+    Image.AnchorPoint = Vector2.new(0.5, 0.5)
 
-if not game:IsLoaded() then
-    game.Loaded:Wait()
-end
+    local Blur = Instance.new("BlurEffect")
+    Blur.Parent = game.Lighting
+    Blur.Size = 0
+    Blur.Name = tostring(math.random(1, 123123))
 
-local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
-if not MainEvent then
-    Players.LocalPlayer:Kick("Are you sure this is Da Hood? / Fallen.lol")
-    return
-end
-
-local function clearFovParts()
-    for _, part in pairs(FovParts) do
-        part:Remove()
+    local function gui(last, properties, t, s)
+        local TI = TweenInfo.new(t or 1, s or Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+        local Tweening = game:GetService("TweenService"):Create(last, TI, properties)
+        Tweening:Play()
     end
-    FovParts = {}
+
+    gui(Image, {ImageTransparency = 0}, 0.3)
+    gui(Blur, {Size = 20}, 0.3)
+    wait(3)
+    gui(Image, {ImageTransparency = 1}, 0.3)
+    gui(Blur, {Size = 0}, 0.3)
+    wait(0.3)
 end
 
-local function updateFov()
-    local settings = getgenv().Fallenlol.FovSettings
-    clearFovParts()
-
-    if settings.FovShape == "Square" then
-        local halfSize = settings.FovRadius / 2
-        local corners = {
-            V2(Mouse.X - halfSize, Mouse.Y - halfSize),
-            V2(Mouse.X + halfSize, Mouse.Y - halfSize),
-            V2(Mouse.X + halfSize, Mouse.Y + halfSize),
-            V2(Mouse.X - halfSize, Mouse.Y + halfSize)
-        }
-        for i = 1, 4 do
-            local line = Drawing.new("Line")
-            line.Visible = settings.FovVisible
-            line.From = corners[i]
-            line.To = corners[i % 4 + 1]
-            line.Color = settings.FovColor
-            line.Thickness = settings.FovThickness
-            line.Transparency = settings.FovTransparency
-            table.insert(FovParts, line)
+if Fallenlol.Configuration.Textures.Enabled then 
+    local function setWhiteColor(obj)
+        if obj:IsA("BasePart") then
+            obj.Color = Color3.new(1, 1, 1)
         end
-    elseif settings.FovShape == "Triangle" then
-        local points = {
-            V2(Mouse.X, Mouse.Y - settings.FovRadius),
-            V2(Mouse.X + settings.FovRadius * math.sin(math.rad(60)), Mouse.Y + settings.FovRadius * math.cos(math.rad(60))),
-            V2(Mouse.X - settings.FovRadius * math.sin(math.rad(60)), Mouse.Y + settings.FovRadius * math.cos(math.rad(60)))
-        }
-        for i = 1, 3 do
-            local line = Drawing.new("Line")
-            line.Visible = settings.FovVisible
-            line.From = points[i]
-            line.To = points[i % 3 + 1]
-            line.Color = settings.FovColor
-            line.Thickness = settings.FovThickness
-            line.Transparency = settings.FovTransparency
-            table.insert(FovParts, line)
-        end
-    else
-        Fov.Visible = settings.FovVisible
-        Fov.Radius = settings.FovRadius
-        Fov.Position = V2(Mouse.X, Mouse.Y + (G:GetService("GuiService"):GetGuiInset().Y))
-        Fov.Color = settings.FovColor
-        Fov.Thickness = settings.FovThickness
-        Fov.Transparency = settings.FovTransparency
-        Fov.Filled = settings.Filled
-        if settings.Filled then
-            Fov.Transparency = settings.FillTransparency
+        for _, child in ipairs(obj:GetChildren()) do
+            setWhiteColor(child)
         end
     end
+    setWhiteColor(game.Workspace)
 end
-
-local function sendNotification(title, text, icon)
-    StarterGui:SetCore("SendNotification", {
-        Title = title,
-        Text = text,
-        Icon = icon,
-        Duration = 5
-    })
-end
-
-local function Death(Plr)
-    if Plr.Character and Plr.Character:FindFirstChild("BodyEffects") then
-        local bodyEffects = Plr.Character.BodyEffects
-        local ko = bodyEffects:FindFirstChild("K.O") or bodyEffects:FindFirstChild("KO")
-        return ko and ko.Value
-    end
-    return false
-end
-
-local function Grabbed(Plr)
-    return Plr.Character and Plr.Character:FindFirstChild("GRABBING_CONSTRAINT") ~= nil
-end
-
-local function isPartInFovAndVisible(part)
-    local screenPoint, onScreen = CurrentCamera:WorldToScreenPoint(part.Position)
-    local distance = (V2(screenPoint.X, screenPoint.Y) - V2(Mouse.X, Mouse.Y)).Magnitude
-    return onScreen and distance <= getgenv().Fallenlol.FovSettings.FovRadius
-end
-
-local function isPartVisible(part)
-    if not getgenv().Fallenlol.WallCheck then 
-        return true
-    end
-    local origin = CurrentCamera.CFrame.Position
-    local direction = (part.Position - origin).Unit * (part.Position - origin).Magnitude
-    local ray = Ray.new(origin, direction)
-    local hit = Workspace:FindPartOnRayWithIgnoreList(ray, {LocalPlayer.Character, part.Parent})
-    return hit == part or not hit
-end
-
-local function GetClosestHitPoint(character)
-    local closestPart = nil
-    local closestPoint = nil
-    local shortestDistance = math.huge
-
-    for _, part in pairs(character:GetChildren()) do
-        if part:IsA("BasePart") and isPartInFovAndVisible(part) and isPartVisible(part) then
-            local screenPoint, onScreen = CurrentCamera:WorldToScreenPoint(part.Position)
-            local distance = (V2(screenPoint.X, screenPoint.Y) - V2(Mouse.X, Mouse.Y)).Magnitude
-
-            if distance < shortestDistance then
-                closestPart = part
-                closestPoint = part.Position
-                shortestDistance = distance
-            end
-        end
-    end
-
-    return closestPart, closestPoint
-end
-
-local Old; Old = hookmetamethod(game, "__namecall", function(Self, ...)
-    local Method = getnamecallmethod()
-    local Arguments = {...}
-    
-    if not checkcaller() and Method == "FireServer" and Self == MainEvent and Arguments[1] == "UpdateMousePos" then
-        Arguments[2] = Target or Arguments[2]
-        return Old(Self, unpack(Arguments))
-    end
-
-    return Old(Self, ...)
-end)
-
-UserInputService.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode[getgenv().Fallenlol.Keybind] then
-        getgenv().Fallenlol.Enabled = not getgenv().Fallenlol.Enabled
-        sendNotification("Fallen.lol", "Script " .. (getgenv().Fallenlol.Enabled and "Enabled" or "Disabled"), "")
-    end
-end)
-
-RunService.RenderStepped:Connect(function()
-    if getgenv().Fallenlol.Enabled then
-        updateFov()
-
-        if getgenv().Fallenlol.FovSettings.FovShape == "Circle" then
-            Fov.Position = V2(Mouse.X, Mouse.Y + (G:GetService("GuiService"):GetGuiInset().Y))
-        end
-
-        local closestTarget = nil
-        local shortestDistance = math.huge
-
-        for _, v in pairs(Players:GetPlayers()) do
-            if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") and v.Character.Humanoid.Health > 0 and not Death(v) and not Grabbed(v) then
-                local hrp = v.Character.HumanoidRootPart
-                if isPartInFovAndVisible(hrp) and isPartVisible(hrp) then
-                    local screenPoint, onScreen = CurrentCamera:WorldToScreenPoint(hrp.Position)
-                    local distance = (V2(screenPoint.X, screenPoint.Y) - V2(Mouse.X, Mouse.Y)).Magnitude
-
-                    if distance < shortestDistance then
-                        closestTarget = v
-                        shortestDistance = distance
-                    end
-                end
-            end
-        end
-
-        if closestTarget then
-            local closestPart, closestPoint = GetClosestHitPoint(closestTarget.Character)
-            if closestPart and closestPoint then
-                local prediction = (closestPoint + (closestTarget.Character.HumanoidRootPart.Velocity * getgenv().Fallenlol.Prediction))
-                Target = V2(CurrentCamera:WorldToScreenPoint(prediction).X, CurrentCamera:WorldToScreenPoint(prediction).Y)
-                HitPoint.Position = Target
-                HitPoint.Visible = getgenv().Fallenlol.HitPoint.ShowHitPoint
-                HitPoint.Radius = getgenv().Fallenlol.HitPoint.HitPointRadius
-                HitPoint.Thickness = getgenv().Fallenlol.HitPoint.HitPointThickness
-                HitPoint.Color = getgenv().Fallenlol.HitPoint.HitPointColor
-                HitPoint.Transparency = getgenv().Fallenlol.HitPoint.HitPointTransparency
-            else
-                Target = nil
-            end
-        else
-            Target = nil
-        end
-    else
-        Fov.Visible = false
-        HitPoint.Visible = false
-    end
-end)
-
-game:BindToClose(function()
-    clearFovParts()
-    Fov:Remove()
-    HitPoint:Remove()
-end)
