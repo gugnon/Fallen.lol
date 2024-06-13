@@ -56,7 +56,7 @@ end
 if Fallenlol.Textures.Enabled then 
     local function setWhiteColor(obj)
         if obj:IsA("BasePart") then
-            obj.Color = Color3.new(1, 1, 1)
+            obj.Color = Fallenlol.Textures.Color
         end
         for _, child in ipairs(obj:GetChildren()) do
             setWhiteColor(child)
